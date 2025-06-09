@@ -10,6 +10,11 @@ if ($request === '/produtos' && $method === 'POST') {
     exit;
 }
 
+if ($request === '/compras' && $method === 'POST') {
+    require_once 'endpoints/compras.php';
+    exit;
+}
+
 http_response_code(404);
 echo json_encode(['erro' => 'Endpoint não encontrado']);
 ?>

@@ -26,6 +26,17 @@ if ($request === '/juros' && $method === 'PUT') {
     exit;
 }
 
+if ($request === '/estatistica' && $method === 'GET') {
+    require_once 'endpoints/estatistica.php';
+    exit;
+}
+
+if ($request === '/compras' && $method === 'DELETE') {
+    require_once 'endpoints/compras_delete.php';
+    exit;
+}
+
+
 // Default 404
 http_response_code(404);
 echo json_encode(['erro' => 'Endpoint não encontrado']);

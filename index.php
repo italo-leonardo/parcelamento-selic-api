@@ -15,6 +15,11 @@ if ($request === '/compras' && $method === 'POST') {
     exit;
 }
 
+if ($request === '/juros' && $method === 'PUT') {
+    require_once 'endpoints/juros.php';
+    exit;
+}
+
 http_response_code(404);
 echo json_encode(['erro' => 'Endpoint não encontrado']);
 ?>

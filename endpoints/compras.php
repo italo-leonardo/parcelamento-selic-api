@@ -61,11 +61,26 @@ $jurosAplicado = 0.0;
 $valorParcela = 0.0;
 
 if ($parcelas > 6) {
-    // Taxa fictícia (até termos o endpoint /juros): 1% ao mês
-    $taxaJuros = 0.01;
+    // Buscar taxa da tabela de juros
+    $stmt = $pdo->prepare("SELECT taxa FROM juros WHERE id = 1");
+    $stmt->execute();
+    $juros = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$juros) {
+        http_response_code(500);
+        echo json_encode(['erro' => 'Taxa de juros não definida. Atualize usando o endpoint /juros']);
+        exit;
+    }
+
+    $taxaJuros = floatval($juros['taxa']); // ex: 0.1365
     $valorFinal = $valorRestante * pow(1 + $taxaJuros, $parcelas); // juros compostos
     $valorParcela = $valorFinal / $parcelas;
-    $jurosAplicado = $taxaJuros * 100;
+    $jurosAplicado = $taxaJuros * 100; // salvar como %
+    echo json_encode([
+    'taxaUsada' => ($taxaJuros * 100) . '%',
+    'valorParcela' => number_format($valorParcela, 2, '.', '')
+    ]);
+    
 } else {
     $valorParcela = $parcelas > 0 ? $valorRestante / $parcelas : 0;
 }

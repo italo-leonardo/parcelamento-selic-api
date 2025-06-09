@@ -1,8 +1,9 @@
 <?php
-$request = $_SERVER['REQUEST_URI'];
+$requestUri = $_SERVER['REQUEST_URI'];
+$request = parse_url($requestUri, PHP_URL_PATH); // remove ?id=...
+
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Remove a pasta base do início da URL
 $request = str_replace('/parcelamento-selic-api', '', $request);
 
 if ($request === '/produtos' && $method === 'POST') {
@@ -15,11 +16,17 @@ if ($request === '/compras' && $method === 'POST') {
     exit;
 }
 
+if ($request === '/compras' && $method === 'GET') {
+    require_once 'endpoints/compras_get.php';
+    exit;
+}
+
 if ($request === '/juros' && $method === 'PUT') {
     require_once 'endpoints/juros.php';
     exit;
 }
 
+// Default 404
 http_response_code(404);
 echo json_encode(['erro' => 'Endpoint não encontrado']);
 ?>

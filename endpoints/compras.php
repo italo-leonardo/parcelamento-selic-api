@@ -1,34 +1,35 @@
 <?php
 require_once __DIR__ . '/../db/conexao.php';
 
+// Função para gerar UUID v4
+function gerarUUIDv4() {
+    return sprintf(
+        '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    );
+}
+
 // Lê os dados do corpo da requisição
 $data = json_decode(file_get_contents("php://input"), true);
 
 // Verifica se os campos obrigatórios foram enviados
-if (!isset($data['id'], $data['valorEntrada'], $data['qtdParcelas'], $data['idProduto'])) {
+if (!isset($data['valorEntrada'], $data['qtdParcelas'], $data['idProduto'])) {
     http_response_code(400); // JSON incompleto
-    echo json_encode(['erro' => 'JSON incompleto']);
+    echo json_encode(['erro' => '400 - Campos obrigatórios: valorEntrada, qtdParcelas, idProduto']);
     exit;
 }
 
-$id = $data['id'];
 $entrada = $data['valorEntrada'];
 $parcelas = $data['qtdParcelas'];
 $idProduto = $data['idProduto'];
 
-// Validações básicas
-if (!is_string($id) || !is_numeric($entrada) || !is_numeric($parcelas) || $parcelas < 0 || !is_string($idProduto) || $entrada < 0) {
+if (!is_numeric($entrada) || !is_numeric($parcelas) || $parcelas < 0 || !is_string($idProduto) || $entrada < 0) {
     http_response_code(422); // Dados inválidos
-    echo json_encode(['erro' => 'Dados invalidos']);
-    exit;
-}
-
-// Verifica se ID da compra já existe
-$stmt = $pdo->prepare("SELECT COUNT(*) FROM compras WHERE id = ?");
-$stmt->execute([$id]);
-if ($stmt->fetchColumn() > 0) {
-    http_response_code(422); // ID duplicado
-    echo json_encode(['erro' => 'ID duplicado']);
+    echo json_encode(['erro' => '422 - Dados inválidos']);
     exit;
 }
 
@@ -39,7 +40,7 @@ $produto = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$produto) {
     http_response_code(422); // Produto inexistente
-    echo json_encode(['erro' => 'Produto inexistente']);
+    echo json_encode(['erro' => '422 - Produto inexistente']);
     exit;
 }
 
@@ -48,9 +49,12 @@ $valorProduto = $produto['valor'];
 // Verifica se entrada é maior que o valor do produto
 if ($entrada > $valorProduto) {
     http_response_code(422);
-    echo json_encode(['erro' => 'Entrada maior que o valor do produto']);
+    echo json_encode(['erro' => '422 - Entrada maior que o valor do produto']);
     exit;
 }
+
+// Gerar ID único da compra
+$id = gerarUUIDv4();
 
 // Calcula valor restante
 $valorRestante = $valorProduto - $entrada;
@@ -68,7 +72,7 @@ if ($parcelas > 6) {
 
     if (!$juros) {
         http_response_code(500);
-        echo json_encode(['erro' => 'Taxa de juros não definida. Atualize usando o endpoint /juros']);
+        echo json_encode(['erro' => '500 - Taxa de juros não definida. Atualize usando o endpoint /juros']);
         exit;
     }
 
@@ -76,11 +80,6 @@ if ($parcelas > 6) {
     $valorFinal = $valorRestante * pow(1 + $taxaJuros, $parcelas); // juros compostos
     $valorParcela = $valorFinal / $parcelas;
     $jurosAplicado = $taxaJuros * 100; // salvar como %
-    echo json_encode([
-    'taxaUsada' => ($taxaJuros * 100) . '%',
-    'valorParcela' => number_format($valorParcela, 2, '.', '')
-    ]);
-    
 } else {
     $valorParcela = $parcelas > 0 ? $valorRestante / $parcelas : 0;
 }
@@ -95,5 +94,10 @@ for ($i = 1; $i <= $parcelas; $i++) {
     $stmt->execute([$id, $i, $valorParcela, $jurosAplicado]);
 }
 
-http_response_code(201); // Compra criada com sucesso
+// Retorna o ID da compra para o cliente
+http_response_code(201);
+echo json_encode([
+    'mensagem' => '201 - Compra criada com sucesso',
+    'id' => $id
+]);
 ?>

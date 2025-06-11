@@ -53,7 +53,7 @@ $response = file_get_contents($url);
 
 if ($response === FALSE) {
     http_response_code(500);
-    echo json_encode(['erro' => 'Erro ao consultar a API da SELIC']);
+    echo json_encode(['erro' => '500 - Erro ao consultar a API da SELIC']);
     exit;
 }
 
@@ -71,7 +71,7 @@ foreach ($dados as $dia) {
 
 if ($count == 0) {
     http_response_code(422);
-    echo json_encode(['erro' => 'Nenhum dado de taxa SELIC encontrado no período informado']);
+    echo json_encode(['erro' => '422 - Nenhum dado de taxa SELIC encontrado no período informado']);
     exit;
 }
 

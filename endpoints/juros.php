@@ -10,7 +10,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 if (!isset($data['dataInicio'], $data['dataFinal'])) {
     http_response_code(400);
-    echo json_encode(['erro' => 'JSON incompleto']);
+    echo json_encode(['erro' => '400 - JSON incompleto']);
     exit;
 }
 
@@ -20,7 +20,7 @@ $dataFinal = $data['dataFinal'];
 // Validações de datas
 if ($dataInicio > $dataFinal || $dataInicio < '2010-01-01' || $dataFinal > date('Y-m-d')) {
     http_response_code(422);
-    echo json_encode(['erro' => 'Intervalo de datas inválido']);
+    echo json_encode(['erro' => '422 - Intervalo de datas invalido']);
     exit;
 }
 
@@ -31,7 +31,7 @@ $diff = $inicio->diff($fim);
 
 if ($diff->y > 10) {
     http_response_code(422);
-    echo json_encode(['erro' => 'O intervalo entre as datas não pode ser superior a 10 anos']);
+    echo json_encode(['erro' => '422 - O intervalo entre as datas não pode ser superior a 10 anos']);
     exit;
 }
 
@@ -83,7 +83,7 @@ $stmt->execute([$media / 100]);
 
 http_response_code(200);
 echo json_encode([
-    'novaTaxa' => round($media, 2) . '%',
+    'novaTaxa' => round($media, 4) . '%',
     'quantidadeDias' => $count,
     'periodo' => "$dataInicio até $dataFinal"
 ]);

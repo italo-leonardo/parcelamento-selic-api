@@ -12,7 +12,7 @@ if ($id) {
 
     if (!$compra) {
         http_response_code(404);
-        echo json_encode(['erro' => 'Compra não encontrada']);
+        echo json_encode(['erro' => '404 - Compra não encontrada']);
         exit;
     }
 
@@ -33,7 +33,7 @@ $compras = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 if (!$compras || count($compras) === 0) {
     http_response_code(404);
-    echo json_encode(['mensagem' => 'Nenhuma compra encontrada']);
+    echo json_encode(['mensagem' => '404 - Nenhuma compra encontrada']);
     exit;
 }
 

@@ -39,5 +39,5 @@ if ($request === '/compras' && $method === 'DELETE') {
 
 // Default 404
 http_response_code(404);
-echo json_encode(['erro' => 'Endpoint não encontrado']);
+echo json_encode(['erro' => '404 - Endpoint não encontrado']);
 ?>
